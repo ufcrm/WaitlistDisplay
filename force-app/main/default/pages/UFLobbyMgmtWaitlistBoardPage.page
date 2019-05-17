@@ -1,0 +1,326 @@
+<!--  
+		URL for page: https://saltest-ufl.cs52.force.com/lobbywaitlist?lobbyId=SFA&numberOfRecs=34&font=20&display=landscape
+			- LobbyId = The Account Id of the advising lobby's cases the page is displaying
+			- numberOfRecs = Number of records to display on a page.
+				- Needed because despite resolutions, certain outputs may display differently
+			- font = Font size of advisee records in waitlist
+			- display = Orientation of the list (either landscape (2 columns) or portrait (1 column))
+-->
+<apex:page controller="UFLobbyMgmtWaitlistBoardCtrl" sideBar="false" showHeader="false" standardStylesheets="false" applyHtmlTag="false">
+    <html xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
+    <head>
+        <title>Advising Lobby Board</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <apex:slds /> <!-- Load SLDS styling -->
+        <c:OneUFVFStyles /> <!-- Load custom styling -->
+        <style>
+            .slds-scope .uf-container {
+            	margin: 10px 20px 20px 20px;
+            }
+            .slds-scope .uf-card {
+            	background-color: rgb(40, 87, 151) !important;
+            	padding: 4px 4px 4px 4px;
+            }
+            .slds-scope .uf-card-white {
+            	background-color: #fff !important;
+            	padding: 2px 2px 2px 2px;
+            	margin-top: 10px !important;
+            	//margin-right: -10px !important;
+            }
+            .slds-scope .uf-time-align {
+            	text-align: right;
+            	padding-right: 30px;
+            }
+            .slds-scope .uf-table-header {
+                font-size: '{!fontSize}'px;
+                color: rgb(40, 87, 151) !important;
+            }
+            .slds-scope .uf-table-font {
+                font-size: '{!fontSize}'px;
+                color: rgb(40, 87, 151) !important;
+            }
+            @keyframes appear {
+                from {
+                	opacity: 0;
+                }
+                to {
+                	opacity: 1;
+                }
+            }
+            @keyframes disappear {
+                from {
+                	opacity: 1;
+                }
+                to {
+                	opacity: 0;
+                }
+            }
+            .slds-scope .eleAppear {
+                animation: appear 0.5s both ease-in; 
+            }
+            .slds-scope .eleDisappear {
+                animation: disappear 0.8s both ease-in; 
+            }
+            .header-time {
+                color: #285797 !important;
+            	position: absolute;
+                right: 20px;
+                top: 12px;
+                font-size: 18pt !important;
+                font-weight: bold !important;
+            }
+        </style>
+    </head>
+        
+    <body class="slds-scope">
+        <!-- UF Header -->
+        <div class="header-uf">
+            <a class="uf-header-ufl-logo" href="#" target="_blank">
+                <apex:image styleClass="uf-new-header-uf" url="{!URLFOR($Resource.UF_media)}" />
+            </a>
+            <h1 id="header" class="header-link">Student Financial Affairs Lobby</h1>
+            <div id="uf-header-time" class="header-time">Test</div>
+        </div>
+        
+        <!-- Instantiate variables outside of refresh -->
+        <script>
+        	var totalRecords = '{!totalRecs}';
+            var displayType = '{!display}';
+        </script>
+        
+		<!-- Markup that will refresh -->        
+        <apex:form id="divToRerender">  
+        	<apex:actionStatus id="refresh-status" onstart="hideTable();" onstop="showTable();"/>
+            <apex:actionPoller action="{!refreshList}" reRender="divToRerender" interval="15" oncomplete="parseData()" status="refresh-status" />
+            
+            <script>
+            function parseData() {
+                pageNumber = '{!pageNumber}';
+                numberOfRecs = '{!numberOfRecs}';
+                recsPerTable = numberOfRecs/2;
+
+                if(pageNumber == 1) {
+                    count = 0;
+                } else {
+                    count = ((pageNumber - 1) * numberOfRecs);
+                }
+
+                tableCount = 1;
+                var printToNextTable = false;
+                var secondOutputDiv = document.getElementById("divOutput2");
+
+                if(displayType == 'portrait') {
+                    secondOutputDiv.setAttribute("style", "display:none");
+                } else {
+                    secondOutputDiv.setAttribute("display", "block");
+                }
+
+                var contacts = new Array();
+                var targetHeader = document.getElementById("header");
+                var targetElement1 = document.getElementById("tableOutput1");
+                var targetElement2 = document.getElementById("tableOutput2");
+
+                <apex:repeat value="{!cases}" var="c">
+					count = count + 1;
+                	var modifiedName = '';
+                    var name = "";
+
+                    var supplied = "{!c.SuppliedName}";
+                    var first = "{!c.Contact.FirstName}";
+                    var last = "{!c.Contact.LastName}";
+
+                    if(last != null && last != '') {
+                    	var firstInitial = first.substring(0, 2);
+                    	var lastInitial = last.substring(0, 2);
+                    	modifiedName = firstInitial + '' + lastInitial;
+                    } else {
+                        name = supplied;
+                    	var firstInitial = name.substring(0, 2);
+                    	var spaceIndex = name.indexOf(" ");
+                    	var lastInitial = name.substring(spaceIndex + 1, spaceIndex + 3);
+                    	modifiedName = firstInitial + '' + lastInitial;
+                    }
+
+                	var dateNow = new Date();
+                    var newDate = '';
+
+                    var checkedIn = new Date('{!c.Check_in_Time__c}');
+                    var created = new Date('{!c.CreatedDate}');
+                    if(created != null && created != '') {
+                        var originalDate = created;
+                    } else {
+                        var originalDate = checkedIn;
+                    }
+
+                	finalTime = getTime(originalDate);
+
+                	var originalDateMin = originalDate.getMinutes();
+                	var minuteString = originalDateMin.toString();
+
+                	if(minuteString.length == 1) {
+                        newDate = originalDate.getHours() + ':0' + minuteString;
+                    } else {
+                        newDate = originalDate.getHours() + ':' + minuteString;
+                    }
+
+                	var diffMs = dateNow - originalDate;
+					var diffHrs = Math.floor((diffMs % 86400000) / 3600000); // hours
+					var diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000); // minutes
+                	diffMins = (diffHrs*60) + diffMins;
+
+                	// Modifying the DOM
+
+                    var tableRow = document.createElement("TR");
+                    var cell1= document.createElement("TD");
+                    cell1.innerHTML = diffMins;
+                	cell1.classList.add("uf-table-font");
+                	cell1.classList.add("slds-text-align_center");
+                    cell1.setAttribute("style", "font-size:{!fontSize}px");
+
+                    var cell2= document.createElement("TD");
+                	cell2.innerHTML = finalTime;
+                	//cell2.innerHTML = newDate;
+                	cell2.classList.add("uf-table-font");
+                	cell2.classList.add("slds-text-align_center");
+                    cell2.setAttribute("style", "font-size:{!fontSize}px");
+
+                    var cell3= document.createElement("TD");
+                    cell3.innerHTML = modifiedName;
+                	cell3.classList.add("uf-table-font");
+                	cell3.classList.add("slds-text-align_center");
+                    cell3.setAttribute("style", "font-size:{!fontSize}px");
+
+                    var cell4= document.createElement("TD");
+                	cell4.innerHTML = count;
+                	cell4.classList.add("uf-table-font");
+                	cell4.classList.add("slds-text-align_center");
+                    cell4.setAttribute("style", "font-size:{!fontSize}px");
+
+                    tableRow.appendChild(cell4);
+                    tableRow.appendChild(cell3);
+                    tableRow.appendChild(cell2);
+                    tableRow.appendChild(cell1);
+
+                	if(tableCount > recsPerTable && displayType != 'portrait') {
+                        printToNextTable = true;
+                    } else {
+                       tableCount = tableCount + 1;
+                    }
+
+                	if(!printToNextTable) {
+                    	targetElement1.appendChild(tableRow);
+                    } else {
+                    	targetElement2.appendChild(tableRow);
+                    }
+                </apex:repeat>
+            }
+
+            // Function to hide table when actionPoller initiates
+            function hideTable() {
+                //console.log("in hide table...");
+                targetElement1 = document.getElementById("gridOutput");
+                targetElement1.classList.remove("eleAppear");
+                targetElement1.classList.add("eleDisappear");
+            }
+
+            // Function to show table when actionPoller completes
+            function showTable() {
+                //console.log("in show table...");
+                targetElement1 = document.getElementById("gridOutput");
+                targetElement1.classList.remove("eleDisappear");
+                targetElement1.classList.add("eleAppear");
+            }
+
+            // Set/Update Time
+            function getTime(time) {
+                var dd = '';
+                var d = time;
+                var h = d.getHours();
+                if (h > 12) {
+                    h = h - 12;
+                    dd = "PM";
+                } else if(h == 12) {
+                    dd = "PM"
+                } else if(h == 0) {
+                    h = 12;
+                    dd = "AM";
+                } else {
+                    dd = "AM"
+                }
+                var m = d.getMinutes()
+                m = (m.toString().length > 1 ? m : '0' + m);
+                var t = '' + h + ':' + m + ' ' + dd;
+                
+                return t;
+            }
+
+            function setClockTime(current) {
+                document.getElementById('uf-header-time').innerHTML = current;
+            }
+
+            // Load data and create markup when the page is ready
+            document.onreadystatechange = function () {
+                if (document.readyState == "interactive") {
+                	var d = new Date();
+
+                    parseData();
+                    setClockTime(getTime(d));
+                    poll();
+                }
+            }
+
+            function poll() {
+                setTimeout(function() {
+                	var d = new Date();
+
+                    //Update the time
+                    setClockTime(getTime(d));
+                    poll();
+                }, 1000);
+            }
+
+            // Change for testing
+
+            </script>
+            
+            <apex:outputPanel id="lobbyStats">
+                <div class="uf-container">
+                    <div class="slds-container--fluid" style="margin-left:auto;margin-right:auto;">
+                        <br/>
+                        <div id="gridOutput" class="slds-grid slds-grid--pull-padded slds-gutters" style="padding-left: 5px; padding-right: 5px;">
+                            <div class="slds-col" id="divOutput1">
+                                <table class="slds-table slds-table--bordered" style="padding-left: 10px; padding-right: 10px;">
+                                    <thead>
+                                        <tr class="slds-text-heading--label">
+                                            <th class="slds-cell-shrink slds-text-align_center uf-table-header" scope="col" style="font-size:{!fontSize}px">#</th>
+                                            <th class="slds-cell-shrink slds-text-align_center uf-table-header" scope="col" style="font-size:{!fontSize}px">Name</th>
+                                            <th class="slds-cell-shrink slds-text-align_center uf-table-header" scope="col" style="font-size:{!fontSize}px">Check in Time</th>
+                                            <th class="slds-cell-shrink slds-text-align_center uf-table-header" scope="col" style="font-size:{!fontSize}px">Min Lapsed</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tableOutput1">
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="slds-col" id="divOutput2">
+                                <table class="slds-table slds-table--bordered" style="padding-left: 10px; padding-right: 10px;">
+                                    <thead>
+                                        <tr class="slds-text-heading--label">
+                                            <th class="slds-cell-shrink slds-text-align_center uf-table-header" scope="col" style="font-size:{!fontSize}px">#</th>
+                                            <th class="slds-cell-shrink slds-text-align_center uf-table-header" scope="col" style="font-size:{!fontSize}px">Name</th>
+                                            <th class="slds-cell-shrink slds-text-align_center uf-table-header" scope="col" style="font-size:{!fontSize}px">Check in Time</th>
+                                            <th class="slds-cell-shrink slds-text-align_center uf-table-header" scope="col" style="font-size:{!fontSize}px">Min Lapsed</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tableOutput2">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </apex:outputPanel>
+        </apex:form>            
+    </body>
+    </html>
+</apex:page>

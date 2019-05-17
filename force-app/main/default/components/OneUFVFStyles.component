@@ -1,0 +1,152 @@
+<!--
+* File: OneUFVFStyles.component
+* Author: Mathew Ruff, Sierra-Cedar, Inc.
+* Description: Custom override styles for VF/SLDS to match OneUF
+-->
+<apex:component id="OneUFVFStyles">
+    <style>
+        body .uf {
+            background: #faf8f1 url({!URLFOR($Resource.One_UF_Background)}) !important;
+        }
+
+        .uf-crm-back {
+            background-color: rgba(0, 82, 155, 1.0) !important;
+        }
+
+        body a {
+            color: #f37021 !important;
+        }
+
+        .message.errorM3 {
+            padding: 10px;
+            background-color: #f2dede;
+            border-color: #ebcccc;
+            color: #a94442;
+            border-radius: 2px;
+            margin: 0px 12px 20px 12px;
+        }
+
+        .errorM3 h4 {
+            padding-right: 5px;
+            font-weight: 600;
+            color: #a94442;
+        }
+
+        .slds-scope .slds-card {
+            background: #fff !important;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+            border-radius: 6px;
+        }
+
+        .slds-scope .slds-text-heading--large,
+        .slds-scope .slds-text-heading--medium,
+        .slds-scope .slds-text-heading--small {
+            text-transform: uppercase;
+            color: #4c87b5 !important;
+            font-weight: 900;
+        }
+
+        .slds-scope .slds-modal__footer .modal-radio .slds-button+.slds-button {
+            margin-left: 0px !important;
+        }
+
+        .slds-scope .slds-modal__content:last-child {
+            border-bottom-right-radius: 0rem;
+            border-bottom-left-radius: 0rem;
+        }
+
+        .slds-scope .slds-modal__close {
+            width: 2rem;
+            height: 1rem;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+        }
+
+        .slds-scope .modalx.slds-button--icon-border-inverse,
+        .slds-scope .modalx.slds-button--icon-inverse {
+            color: #16325c !important;
+        }
+
+        .slds-scope .modalx.slds-button:focus,
+        .slds-scope .modalx.slds-button:hover {
+            color: #005fb2 !important;
+        }
+
+        .slds-scope .modalx.slds-button:focus {
+            outline: 0;
+            box-shadow: none;
+        }
+
+        .slds-scope .slds-modal__container {
+            height: auto !important;
+        }
+
+        .slds-scope .slds-modal__header,
+        .slds-scope .slds-modal__content,
+        .slds-scope .slds-modal__footer {
+            background-color: #f1f1f1 !important;
+        }
+
+        .scoreRadios {
+            text-align: left !important;
+        }
+
+        label.slds-radio--button__label {
+            background-color: #fff;
+        }
+
+        .slds-scope .slds-form-element__label {
+            margin-left: 3px;
+        }
+
+        .slds-scope .slds-button--brand {
+            background-color: #337ab7 !important;
+            color: #fff !important;
+        }
+
+        @media only screen and (max-device-width:769px) {
+            .scoreRadios {
+                text-align: right !important;
+            }
+
+            .slds-scope .slds-modal__container {
+                margin: 0 0.5rem !important;
+                padding: 1rem 0 !important;
+            }
+
+            .slds-scope .slds-form-element__label {
+                margin-right: 3px !important;
+            }
+        }
+
+        .header-uf {
+            height: 64px;
+            background: #fff;
+            border-bottom: 4px solid #E0812E;
+        }
+
+        .uf-new-header-uf {
+            width: 64px;
+            height: 60px !important;
+            padding: 12px;
+            background: #285797!important;
+        }
+
+        .uf-salesforce-logo {
+            width: 42px;
+            height: 40px !important;
+            padding: 8px;
+            background: #285797!important;
+        }
+
+        .header-link {
+            color: #285797 !important;
+            position: absolute;
+            left: 83px;
+        	top: 12px;
+            font-size: 18pt !important;
+        	font-weight: bold !important;
+        }
+    </style>
+</apex:component>
